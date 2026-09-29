@@ -1,0 +1,29 @@
+node_modules/
+dist/
+src-tauri/target/
+src-tauri/gen/
+*.log
+.DS_Store
+
+# Generated installers and reports
+*.exe
+*.msi
+*.msix
+*.pdb
+coverage/
+
+# Personal data and credentials
+.env
+.env.*
+!.env.example
+settings.json
+settings.json.tmp
+photo-cache/
+*.pem
+*.key
+
+# Local editor and OS files
+.idea/
+.vs/
+Thumbs.db
+Desktop.ini

@@ -1,0 +1,30 @@
+[package]
+name = "gphoto-frame"
+version = "0.3.2"
+description = "A lightweight photo frame for Windows displays"
+authors = ["GPhoto Frame contributors"]
+edition = "2021"
+rust-version = "1.77.2"
+
+[lib]
+name = "gphoto_frame_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+futures = "0.3"
+hex = "0.4"
+regex = "1"
+reqwest = { version = "0.12", default-features = false, features = ["rustls-tls", "gzip", "brotli"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+sha2 = "0.10"
+tauri = { version = "2", features = ["protocol-asset"] }
+tauri-plugin-dialog = "2"
+tokio = { version = "1", features = ["fs", "macros", "rt-multi-thread", "sync", "time"] }
+url = "2"
+
+[dev-dependencies]
+tempfile = "3"
