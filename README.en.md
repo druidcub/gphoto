@@ -2,6 +2,10 @@
 
 [繁體中文](README.md) | English
 
+[Download Windows x64 installer](https://github.com/druidcub/gphoto/releases/latest/download/GPhoto-Frame-windows-x64-setup.exe) · [Release notes and older versions](https://github.com/druidcub/gphoto/releases) · [SHA-256 checksums](https://github.com/druidcub/gphoto/releases/latest/download/SHA256SUMS.txt)
+
+Download the `.exe`, not Source code ZIP. Download links become available after the first public release; drafts do not update the latest download. Installers are currently unsigned and Windows may show a security warning. Verify the source and checksums; do not disable security protection.
+
 A Windows photo player built with Tauri 2, Rust, React and TypeScript. Play photos from a public Google Photos shared album or a local folder, in full screen or a draggable mini window. The application UI currently uses Traditional Chinese; key labels are included below.
 
 ## Features
@@ -116,6 +120,7 @@ npm run dev
 
 ```powershell
 npm test
+npm run test:release
 npm run typecheck
 cargo test --manifest-path src-tauri/Cargo.toml
 ```
@@ -131,10 +136,30 @@ cargo test --manifest-path src-tauri/Cargo.toml live_shared_album_smoke_test -- 
 ## Building and distribution
 
 ```powershell
-npm run build
+npm run release:check -- v0.3.2
+npm run build -- --bundles nsis -- --locked
+npm run release:prepare -- v0.3.2
 ```
 
-The installer is generated in `src-tauri/target/release/bundle/nsis/`. You may copy it to the project root for delivery; the build command does not do so automatically, and installers are excluded from Git. For public distribution, use version 0.3.2 or a later version with the built-in album removed—not older installers. Verify the blank URL using fresh user data and ensure packages contain no personal settings or cached photos.
+The installer is generated in `src-tauri/target/release/bundle/nsis/`. `release:prepare` copies the exact-version installer, an identical `GPhoto-Frame-windows-x64-setup.exe`, and `SHA256SUMS.txt` to the project root. These files are excluded from Git; older installers are preserved. Preparation only organizes existing output: run a successful build first, rather than treating stale output as a new build.
+
+For public distribution, use 0.3.2 or later with the built-in album removed. Verify the blank URL with fresh user data and ensure packages contain no personal settings or cached photos. Compare `Get-FileHash -Algorithm SHA256 .\GPhoto-Frame-windows-x64-setup.exe` against the checksum file.
+
+### Publishing to GitHub (maintainers)
+
+Confirm that origin is `https://github.com/druidcub/gphoto.git`, the GitHub repository exists, and Actions is enabled. Commit all changes before running (never overwrite existing version tags):
+
+```powershell
+git push -u origin main
+git tag -a v0.3.2 -m "GPhoto Frame 0.3.2"
+git push origin v0.3.2
+```
+
+Pushing a version tag triggers Windows tests and packaging, then creates or updates a **draft release**, without publishing it. Normal tests do not access real albums. Version mismatches and failed tests stop the workflow; published releases cannot be overwritten by this process.
+
+Check Actions, open the draft under Releases, download/test its assets and verify checksums. Then manually publish it as a stable release and mark it Latest; README download links will serve the new version. Do not publish a draft while the workflow is still running.
+
+For subsequent releases, update the npm/Tauri/Cargo project versions and lockfiles together, add bilingual `release-notes/vX.Y.Z.md`, and push the matching tag. The workflow uses the built-in `GITHUB_TOKEN` with `contents: write`, not a personal token. In-app automatic updates and code signing are not included.
 
 ## Project structure
 

@@ -2,6 +2,10 @@
 
 繁體中文 | [English](README.en.md)
 
+[下載 Windows x64 安裝程式](https://github.com/druidcub/gphoto/releases/latest/download/GPhoto-Frame-windows-x64-setup.exe) · [版本說明與歷史下載](https://github.com/druidcub/gphoto/releases) · [SHA-256 校驗碼](https://github.com/druidcub/gphoto/releases/latest/download/SHA256SUMS.txt)
+
+下載 `.exe`，不是 Source code ZIP。首次正式 Release 公開前，下載連結尚不可用；草稿不會更新最新下載。安裝檔目前未簽章，Windows 可能顯示安全提醒；請核對來源與校驗碼，不要關閉安全防護。
+
 以 Tauri 2、Rust、React 與 TypeScript 開發的 Windows 相片播放器。從 Google Photos 公開分享相簿或本機資料夾播放照片，支援全螢幕展示與可拖曳的小視窗。
 
 ## 功能特色
@@ -116,6 +120,7 @@ npm run dev
 
 ```powershell
 npm test
+npm run test:release
 npm run typecheck
 cargo test --manifest-path src-tauri/Cargo.toml
 ```
@@ -131,10 +136,30 @@ cargo test --manifest-path src-tauri/Cargo.toml live_shared_album_smoke_test -- 
 ## 建置與發行
 
 ```powershell
-npm run build
+npm run release:check -- v0.3.2
+npm run build -- --bundles nsis -- --locked
+npm run release:prepare -- v0.3.2
 ```
 
-安裝檔輸出於 `src-tauri/target/release/bundle/nsis/`，可另行複製到專案根目錄供交付；建置命令不會自動複製，安裝檔不納入 Git。公開發行請使用 0.3.2 或後續已清除預設相簿的版本，不要混用舊安裝檔。以全新使用者資料驗證網址欄空白，並確認發行包不含個人快取或設定。
+安裝檔輸出於 `src-tauri/target/release/bundle/nsis/`；`release:prepare` 將當前版本安裝檔、固定名稱 `GPhoto-Frame-windows-x64-setup.exe` 及 `SHA256SUMS.txt` 放到專案根目錄。兩份安裝檔內容相同，均不納入 Git，舊檔不刪除。整理腳本只整理既有輸出，必須先成功建置，不要將舊輸出當成新建置結果。
+
+公開發行請使用 0.3.2 或後續已清除預設相簿的版本，不要混用舊安裝檔。以全新使用者資料驗證網址欄空白，並確認發行包不含個人快取或設定。可使用 `Get-FileHash -Algorithm SHA256 .\GPhoto-Frame-windows-x64-setup.exe` 與校驗碼檔比對。
+
+### 發布至 GitHub（維護者）
+
+確認遠端為 `https://github.com/druidcub/gphoto.git`，GitHub 儲存庫已存在且 Actions 可用。先提交所有改動，再執行（請勿覆寫已存在的版本標籤）：
+
+```powershell
+git push -u origin main
+git tag -a v0.3.2 -m "GPhoto Frame 0.3.2"
+git push origin v0.3.2
+```
+
+推送版本標籤會啟動 Windows 自動測試與封裝，成功後建立或更新同版本的 **Release 草稿**，不自動公開。一般測試不存取真實相簿；版本不一致或測試失敗時停止。已公開的 Release 不可由此流程覆寫。
+
+到 GitHub Actions 確認成功，再到 Releases 開啟草稿、下載測試、比對校驗碼，確認後手動發布正式版本並設為 Latest。此時 README 固定連結會提供新版本。發布前不要在 workflow 執行中手動公開草稿。
+
+未來版本需同步更新 npm／Tauri／Cargo 與 lockfile 的專案版本，新增 `release-notes/vX.Y.Z.md` 中英文發行說明，再推送相符標籤。流程使用內建 `GITHUB_TOKEN` 的 `contents: write`，不用個人 token；不包含程式內自動更新或程式碼簽章。
 
 ## 專案結構
 

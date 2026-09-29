@@ -1,0 +1,48 @@
+name: Windows release draft
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  windows-release:
+    runs-on: windows-2022
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Install Rust stable MSVC
+        run: rustup toolchain install stable --profile minimal --no-self-update
+      - name: Select Rust stable
+        run: rustup default stable
+      - name: Validate tag and all project versions
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: node scripts/release.cjs check "$env:RELEASE_TAG"
+      - run: npm ci
+      - run: npm run test:release
+      - run: npm test
+      - run: npm run typecheck
+      - run: cargo test --locked --manifest-path src-tauri/Cargo.toml
+      - name: Build Windows x64 NSIS installer
+        run: npm run build -- --bundles nsis -- --locked
+      - name: Prepare exact-version assets and checksums
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: node scripts/release.cjs prepare "$env:RELEASE_TAG"
+      - name: Create or update draft only
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: node scripts/release.cjs draft "$env:RELEASE_TAG"

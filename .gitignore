@@ -11,6 +11,7 @@ src-tauri/gen/
 *.msix
 *.pdb
 coverage/
+/SHA256SUMS.txt
 
 # Personal data and credentials
 .env

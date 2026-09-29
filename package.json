@@ -5,6 +5,10 @@
   "author": "GPhoto Frame contributors",
   "license": "MIT",
   "scripts": {
+    "release:check": "node scripts/release.cjs check",
+    "release:prepare": "node scripts/release.cjs prepare",
+    "release:draft": "node scripts/release.cjs draft",
+    "test:release": "node --test scripts/release-checks.cjs",
     "dev": "tauri dev",
     "dev:web": "vite",
     "build": "npm run typecheck && tauri build",
