@@ -25,3 +25,12 @@ it('hides mini controls until hovered and uses themed scrollbars', () => {
   expect(css).toContain('scrollbar-color: #806849 #11161c;');
   expect(css).toContain('.setup-card::-webkit-scrollbar-thumb');
 });
+it('places support and version information in the left brand area, not playback settings', () => {
+  const html = render(settings);
+  const brand = html.slice(html.indexOf('class="brand-block"'), html.indexOf('class="setup-card"'));
+  const setup = html.slice(html.indexOf('class="setup-card"'));
+  expect(brand).toContain('支持開發');
+  expect(brand).toContain('版本資訊');
+  expect(setup).not.toContain('支持開發');
+  expect(setup).not.toContain('版本資訊');
+});

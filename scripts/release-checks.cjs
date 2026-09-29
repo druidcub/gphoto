@@ -14,6 +14,7 @@ function fixture(t) {
   write('src-tauri/Cargo.toml', '[package]\nname = "gphoto-frame"\nversion = "0.3.2"\n');
   write('src-tauri/Cargo.lock', '[[package]]\nname = "gphoto-frame"\nversion = "0.3.2"\n');
   write('release-notes/v0.3.2.md', 'Test release');
+  write('src-tauri/target/release/gphoto-frame.exe', 'MZportable');
   return { root, write };
 }
 test('all versions and strict release tags must agree', t => {
@@ -30,9 +31,14 @@ test('packaging selects exact version, preserves old files and hashes identical 
   assert.throws(() => prepare(root, 'v0.3.2'), /ENOENT/);
   write(`${folder}GPhoto Frame_0.3.2_x64-setup.exe`, 'MZnew');
   const result = prepare(root, 'v0.3.2');
-  const [a, b, sums] = assetNames('0.3.2');
+  const [a, b, c, d, sums] = assetNames('0.3.2');
   assert.deepEqual(fs.readFileSync(path.join(root, a)), fs.readFileSync(path.join(root, b)));
-  assert.equal(fs.readFileSync(path.join(root, sums), 'utf8'), `${result.hash}  ${a}\n${result.hash}  ${b}\n`);
+  assert.equal(result.assets.length, 5);
+  assert.deepEqual(fs.readFileSync(path.join(root, c)), fs.readFileSync(path.join(root, d)));
+  assert.notDeepEqual(fs.readFileSync(path.join(root, a)), fs.readFileSync(path.join(root, c)));
+  const crypto = require('node:crypto');
+  const expected = [a, b, c, d].map(name => `${crypto.createHash('sha256').update(fs.readFileSync(path.join(root, name))).digest('hex')}  ${name}\n`).join('');
+  assert.equal(fs.readFileSync(path.join(root, sums), 'utf8'), expected);
   assert.equal(fs.readFileSync(path.join(root, folder, 'GPhoto Frame_0.3.1_x64-setup.exe'), 'utf8'), 'MZold');
 });
 test('published release and API errors cannot trigger remote mutations', t => {
@@ -43,6 +49,17 @@ test('published release and API errors cannot trigger remote mutations', t => {
   }), /published/);
   assert.equal(calls.length, 1);
   assert.throws(() => draft(root, 'v0.3.2', 'owner/repo', () => { throw new Error('Network unavailable'); }), /Network/);
+});
+test('missing or invalid portable input never replaces delivery assets', t => {
+  const { root, write } = fixture(t);
+  write('src-tauri/target/release/bundle/nsis/GPhoto Frame_0.3.2_x64-setup.exe', 'MZnew');
+  write('GPhoto-Frame-windows-x64-setup.exe', 'previous delivery');
+  fs.unlinkSync(path.join(root, 'src-tauri/target/release/gphoto-frame.exe'));
+  assert.throws(() => prepare(root), /ENOENT/);
+  write('src-tauri/target/release/gphoto-frame.exe', 'not-exe');
+  assert.throws(() => prepare(root), /Not a Windows executable/);
+  assert.equal(fs.readFileSync(path.join(root, 'GPhoto-Frame-windows-x64-setup.exe'), 'utf8'), 'previous delivery');
+  assert.equal(fs.existsSync(path.join(root, 'SHA256SUMS.txt')), false);
 });
 for (const exists of [false, true]) test(`draft ${exists ? 'rerun updates' : 'creation creates'} without publishing`, t => {
   const { root, write } = fixture(t);

@@ -1,0 +1,38 @@
+import { act, create } from 'react-test-renderer';
+import { expect, it, vi, afterEach } from 'vitest';
+import { AppInfo } from '../src/renderer/components/AppInfo';
+import { changelog } from '../src/shared/changelog';
+const api = vi.hoisted(() => ({ appVersion: vi.fn(async () => '0.3.3'), openExternal: vi.fn(async () => {}) }));
+vi.mock('../src/renderer/core/appInfo', () => api);
+afterEach(() => vi.clearAllMocks());
+it('shows bundled newest-first history, native modal and restores trigger focus', async () => {
+  const modal = { showModal: vi.fn(), close: vi.fn() };
+  const trigger = { focus: vi.fn() };
+  let view!: ReturnType<typeof create>;
+  await act(async () => { view = create(<AppInfo />, { createNodeMock: node => node.type === 'dialog' ? modal : trigger }); });
+  expect(JSON.stringify(view.toJSON())).toContain('0.3.3');
+  expect(changelog.map(entry => entry.version)).toEqual(['0.3.3', '0.3.2', '0.3.1', '0.3.0']);
+  const button = (name: string) => view.root.findAllByType('button').find(b => b.children.join('') === name)!;
+  act(() => button('版本資訊').props.onClick());
+  expect(modal.showModal).toHaveBeenCalledOnce();
+  expect(button('關閉').props.autoFocus).toBe(true);
+  act(() => button('關閉').props.onClick());
+  expect(modal.close).toHaveBeenCalledOnce();
+  act(() => view.root.findByType('dialog').props.onClose());
+  expect(trigger.focus).toHaveBeenCalledOnce();
+  await act(async () => button('支持開發 ↗').props.onClick());
+  expect(api.openExternal).toHaveBeenCalledWith('support');
+  await act(async () => button('查看線上版本 ↗').props.onClick());
+  expect(api.openExternal).toHaveBeenCalledWith('releases');
+  act(() => view.unmount());
+});
+it('reports browser failures and native version failures without hiding controls', async () => {
+  api.appVersion.mockRejectedValueOnce(new Error('native failure'));
+  api.openExternal.mockRejectedValueOnce(new Error('browser failure'));
+  let view!: ReturnType<typeof create>;
+  await act(async () => { view = create(<AppInfo />); });
+  expect(JSON.stringify(view.toJSON())).toContain('無法取得版本');
+  await act(async () => view.root.findAllByType('button')[0].props.onClick());
+  expect(view.root.findByProps({ role: 'alert' }).children.join('')).toContain('無法開啟瀏覽器');
+  act(() => view.unmount());
+});

@@ -1,5 +1,6 @@
 import type { AppSettings, SourceMode } from '../../shared/types';
 import { SLIDE_DURATIONS } from '../core/playback';
+import { AppInfo } from '../components/AppInfo';
 
 type SettingsPageProps = {
   settings: AppSettings;
@@ -31,6 +32,7 @@ export function SettingsPage({
         <span className="eyebrow">WINDOWS AMBIENT DISPLAY</span>
         <h1>GPhoto <em>Frame</em></h1>
         <p>完整保留每張照片，再用它自己的色彩填滿空間。</p>
+        <AppInfo />
       </section>
 
       <section className="setup-card">

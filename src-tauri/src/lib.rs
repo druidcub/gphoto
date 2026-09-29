@@ -64,6 +64,7 @@ async fn sync_google_album(
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_dialog::init())
+        .plugin(tauri_plugin_opener::init())
         .on_window_event(|window, event| {
             if matches!(event, tauri::WindowEvent::Destroyed) { let _ = power::set_awake(false); }
             if matches!(event, tauri::WindowEvent::Resized(_)) {

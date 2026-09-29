@@ -57,7 +57,7 @@ button { font: inherit; }
 .eyebrow { color: #b9925e; letter-spacing: .22em; font-size: 11px; font-weight: 600; }
 .brand-block h1 { margin: 18px 0 20px; font-size: clamp(52px, 7vw, 104px); line-height: .88; letter-spacing: -.06em; font-weight: 500; }
 .brand-block h1 em { display: block; margin-left: 17%; color: #d4ab74; font-family: 'Playfair Display', Georgia, serif; font-weight: 600; }
-.brand-block p { max-width: 380px; color: #89929c; font-size: 15px; line-height: 1.8; }
+.brand-block > p { max-width: 380px; color: #89929c; font-size: 15px; line-height: 1.8; }
 
 .setup-card { max-height: calc(100vh - 90px); overflow: auto; padding: clamp(28px, 3.4vw, 50px); background: rgba(18, 23, 29, .88); border: 1px solid rgba(255,255,255,.08); box-shadow: 0 28px 80px rgba(0,0,0,.32); backdrop-filter: blur(18px); }
 .step-marker { color: #d4ab74; font-family: Georgia, serif; font-size: 14px; padding-bottom: 16px; border-bottom: 1px solid rgba(255,255,255,.09); }
@@ -188,10 +188,21 @@ button { font: inherit; }
 @media (max-width: 900px) {
   .settings-page { grid-template-columns: 1fr; align-content: center; gap: 36px; overflow: auto; }
   .brand-block h1 { font-size: 58px; }
-  .brand-block p { display: none; }
+  .brand-block > p { display: none; }
   .settings-page footer { position: static; grid-column: 1; }
 }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; }
 }
+.app-info { width: 100%; margin-top: 20px; }
+.app-info-actions { display: flex; flex-wrap: wrap; gap: 12px; }
+.app-info button { color: #d8bb8a; background: #171c22; border: 1px solid #806849; border-radius: 8px; padding: 8px 16px; cursor: pointer; }
+.app-info button:focus-visible { outline: 2px solid #e8ca96; outline-offset: 3px; }
+.app-info [role="alert"] { color: #ffb1a8; }
+.version-dialog { width: min(620px, calc(100vw - 48px)); max-height: 80vh; box-sizing: border-box; overflow: auto; padding: 24px; color: #eee6db; background: #11161c; border: 1px solid #806849; border-radius: 16px; scrollbar-color: #806849 #11161c; }
+.version-dialog::backdrop { background: rgb(0 0 0 / 65%); }
+.version-heading { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.version-dialog h2 { margin: 0; }
+.version-dialog section { border-top: 1px solid #39352e; margin-top: 20px; }
+.version-dialog li { line-height: 1.7; }

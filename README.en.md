@@ -2,6 +2,16 @@
 
 [繁體中文](README.md) | English
 
+[Download standalone EXE (Windows x64)](https://github.com/druidcub/gphoto/releases/latest/download/GPhoto-Frame-windows-x64-portable.exe) · [Support development (PayPal)](https://paypal.me/druidcub)
+
+### Standalone edition and support
+
+The standalone download becomes available after **0.3.3 is publicly released**. Choose setup or portable; each format has identical versioned and stable-name copies. The standalone EXE runs directly, without creating shortcuts or an uninstall entry. It still requires [Microsoft WebView2 Runtime](https://developer.microsoft.com/microsoft-edge/webview2/); install the runtime first if missing, or use the setup edition.
+
+Both editions share settings and photo cache in `%LOCALAPPDATA%\io.gphotoframe.desktop`. This is not USB-portable data stored beside the EXE. Do not run both editions simultaneously. Standalone executables are also unsigned; verify the source and SHA-256.
+
+Support development (支持開發) and Version information (版本資訊) appear below the branding on the left, separate from functional settings on the right. Bundled history from 0.3.0 is readable offline, with a link to online releases; automatic updating is not included. PayPal support is voluntary and all features remain free. The application does not process payments or track sponsors.
+
 [Download Windows x64 installer](https://github.com/druidcub/gphoto/releases/latest/download/GPhoto-Frame-windows-x64-setup.exe) · [Release notes and older versions](https://github.com/druidcub/gphoto/releases) · [SHA-256 checksums](https://github.com/druidcub/gphoto/releases/latest/download/SHA256SUMS.txt)
 
 Download the `.exe`, not Source code ZIP. Download links become available after the first public release; drafts do not update the latest download. Installers are currently unsigned and Windows may show a security warning. Verify the source and checksums; do not disable security protection.
@@ -136,9 +146,9 @@ cargo test --manifest-path src-tauri/Cargo.toml live_shared_album_smoke_test -- 
 ## Building and distribution
 
 ```powershell
-npm run release:check -- v0.3.2
+npm run release:check -- v0.3.3
 npm run build -- --bundles nsis -- --locked
-npm run release:prepare -- v0.3.2
+npm run release:prepare -- v0.3.3
 ```
 
 The installer is generated in `src-tauri/target/release/bundle/nsis/`. `release:prepare` copies the exact-version installer, an identical `GPhoto-Frame-windows-x64-setup.exe`, and `SHA256SUMS.txt` to the project root. These files are excluded from Git; older installers are preserved. Preparation only organizes existing output: run a successful build first, rather than treating stale output as a new build.
@@ -151,8 +161,8 @@ Confirm that origin is `https://github.com/druidcub/gphoto.git`, the GitHub repo
 
 ```powershell
 git push -u origin main
-git tag -a v0.3.2 -m "GPhoto Frame 0.3.2"
-git push origin v0.3.2
+git tag -a v0.3.3 -m "GPhoto Frame 0.3.3"
+git push origin v0.3.3
 ```
 
 Pushing a version tag triggers Windows tests and packaging, then creates or updates a **draft release**, without publishing it. Normal tests do not access real albums. Version mismatches and failed tests stop the workflow; published releases cannot be overwritten by this process.
@@ -160,6 +170,10 @@ Pushing a version tag triggers Windows tests and packaging, then creates or upda
 Check Actions, open the draft under Releases, download/test its assets and verify checksums. Then manually publish it as a stable release and mark it Latest; README download links will serve the new version. Do not publish a draft while the workflow is still running.
 
 For subsequent releases, update the npm/Tauri/Cargo project versions and lockfiles together, add bilingual `release-notes/vX.Y.Z.md`, and push the matching tag. The workflow uses the built-in `GITHUB_TOKEN` with `contents: write`, not a personal token. In-app automatic updates and code signing are not included.
+
+Preparation also copies `src-tauri/target/release/gphoto-frame.exe` from the same build into two standalone executables. All four EXEs are listed in `SHA256SUMS.txt`; missing inputs stop preparation. A release draft should contain four EXEs and the checksum file. Maintain bilingual summaries in `src/shared/changelog.ts` for future versions.
+
+The Sponsor button uses the PayPal custom link in `.github/FUNDING.yml`. After pushing to the default branch, ensure Sponsorships is enabled under GitHub Settings → General → Features.
 
 ## Project structure
 

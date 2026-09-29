@@ -2,6 +2,16 @@
 
 繁體中文 | [English](README.en.md)
 
+[下載免安裝 EXE（Windows x64）](https://github.com/druidcub/gphoto/releases/latest/download/GPhoto-Frame-windows-x64-portable.exe) · [支持開發（PayPal）](https://paypal.me/druidcub)
+
+### 免安裝版與支持開發
+
+免安裝下載自 **0.3.3 正式發布**後可用。選擇安裝版（setup）或免安裝版（portable）其中一種即可；每種的版本檔名與固定檔名副本內容相同。免安裝 EXE 可直接執行，不建立捷徑或解除安裝項目，但仍需 [Microsoft WebView2 Runtime](https://developer.microsoft.com/microsoft-edge/webview2/)。缺少時請先安裝 Runtime，或改用安裝版。
+
+兩版共用 `%LOCALAPPDATA%\io.gphotoframe.desktop` 的設定與照片快取；不是把資料存到 EXE 旁的隨身碟模式，請勿同時執行兩版。免安裝 EXE 同樣未簽章，請核對來源及 SHA-256。
+
+設定頁左側品牌介紹下方提供「支持開發」及「版本資訊」，與右側功能設定分開。版本資訊可離線查看目前版本與 0.3.0 起的更新摘要，也可用外部瀏覽器查看線上 Releases；不會自動更新。PayPal 贊助完全自願，不影響免費功能；程式不處理付款或追蹤贊助者。
+
 [下載 Windows x64 安裝程式](https://github.com/druidcub/gphoto/releases/latest/download/GPhoto-Frame-windows-x64-setup.exe) · [版本說明與歷史下載](https://github.com/druidcub/gphoto/releases) · [SHA-256 校驗碼](https://github.com/druidcub/gphoto/releases/latest/download/SHA256SUMS.txt)
 
 下載 `.exe`，不是 Source code ZIP。首次正式 Release 公開前，下載連結尚不可用；草稿不會更新最新下載。安裝檔目前未簽章，Windows 可能顯示安全提醒；請核對來源與校驗碼，不要關閉安全防護。
@@ -136,9 +146,9 @@ cargo test --manifest-path src-tauri/Cargo.toml live_shared_album_smoke_test -- 
 ## 建置與發行
 
 ```powershell
-npm run release:check -- v0.3.2
+npm run release:check -- v0.3.3
 npm run build -- --bundles nsis -- --locked
-npm run release:prepare -- v0.3.2
+npm run release:prepare -- v0.3.3
 ```
 
 安裝檔輸出於 `src-tauri/target/release/bundle/nsis/`；`release:prepare` 將當前版本安裝檔、固定名稱 `GPhoto-Frame-windows-x64-setup.exe` 及 `SHA256SUMS.txt` 放到專案根目錄。兩份安裝檔內容相同，均不納入 Git，舊檔不刪除。整理腳本只整理既有輸出，必須先成功建置，不要將舊輸出當成新建置結果。
@@ -151,8 +161,8 @@ npm run release:prepare -- v0.3.2
 
 ```powershell
 git push -u origin main
-git tag -a v0.3.2 -m "GPhoto Frame 0.3.2"
-git push origin v0.3.2
+git tag -a v0.3.3 -m "GPhoto Frame 0.3.3"
+git push origin v0.3.3
 ```
 
 推送版本標籤會啟動 Windows 自動測試與封裝，成功後建立或更新同版本的 **Release 草稿**，不自動公開。一般測試不存取真實相簿；版本不一致或測試失敗時停止。已公開的 Release 不可由此流程覆寫。
@@ -160,6 +170,10 @@ git push origin v0.3.2
 到 GitHub Actions 確認成功，再到 Releases 開啟草稿、下載測試、比對校驗碼，確認後手動發布正式版本並設為 Latest。此時 README 固定連結會提供新版本。發布前不要在 workflow 執行中手動公開草稿。
 
 未來版本需同步更新 npm／Tauri／Cargo 與 lockfile 的專案版本，新增 `release-notes/vX.Y.Z.md` 中英文發行說明，再推送相符標籤。流程使用內建 `GITHUB_TOKEN` 的 `contents: write`，不用個人 token；不包含程式內自動更新或程式碼簽章。
+
+整理腳本現在也從同次建置的 `src-tauri/target/release/gphoto-frame.exe` 產生兩份免安裝 EXE，全部四個 EXE 都列入 `SHA256SUMS.txt`，缺少任一來源時停止。GitHub 草稿應有四個 EXE 與一份校驗碼。未來更新時也請維護內建的 `src/shared/changelog.ts` 中英文摘要。
+
+Sponsor 按鈕由 `.github/FUNDING.yml` 提供 PayPal 自訂連結；推送至預設分支後，在 GitHub Settings → General → Features 確認 Sponsorships 已啟用。
 
 ## 專案結構
 

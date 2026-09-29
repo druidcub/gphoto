@@ -1,6 +1,6 @@
 [package]
 name = "gphoto-frame"
-version = "0.3.2"
+version = "0.3.3"
 description = "A lightweight photo frame for Windows displays"
 authors = ["GPhoto Frame contributors"]
 edition = "2021"
@@ -23,6 +23,7 @@ serde_json = "1"
 sha2 = "0.10"
 tauri = { version = "2", features = ["protocol-asset"] }
 tauri-plugin-dialog = "2"
+tauri-plugin-opener = "2"
 tokio = { version = "1", features = ["fs", "macros", "rt-multi-thread", "sync", "time"] }
 url = "2"
 

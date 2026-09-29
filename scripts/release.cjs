@@ -29,19 +29,30 @@ function validateVersions(root, tag) {
 }
 
 function assetNames(version) {
-  return [`GPhoto Frame_${version}_x64-setup.exe`, FIXED_NAME, 'SHA256SUMS.txt'];
+  return [`GPhoto Frame_${version}_x64-setup.exe`, FIXED_NAME,
+    `GPhoto Frame_${version}_x64-portable.exe`, 'GPhoto-Frame-windows-x64-portable.exe', 'SHA256SUMS.txt'];
 }
 
 function prepare(root, tag) {
   const version = validateVersions(root, tag);
-  const [versioned, fixed, sums] = assetNames(version);
+  const [versioned, fixed, portable, portableFixed, sums] = assetNames(version);
   const source = path.join(root, 'src-tauri/target/release/bundle/nsis', versioned);
-  const bytes = fs.readFileSync(source);
-  if (bytes.length < 2 || bytes.subarray(0, 2).toString() !== 'MZ') throw new Error('Not a Windows executable');
-  const hash = crypto.createHash('sha256').update(bytes).digest('hex');
-  for (const name of [versioned, fixed]) fs.copyFileSync(source, path.join(root, name));
-  fs.writeFileSync(path.join(root, sums), [versioned, fixed].map(name => `${hash}  ${name}\n`).join(''));
-  return { version, hash, assets: assetNames(version) };
+  const inputs = [
+    { source, names: [versioned, fixed] },
+    { source: path.join(root, 'src-tauri/target/release/gphoto-frame.exe'), names: [portable, portableFixed] },
+  ].map(item => {
+    const bytes = fs.readFileSync(item.source);
+    if (bytes.length < 2 || bytes.subarray(0, 2).toString() !== 'MZ') throw new Error(`Not a Windows executable: ${item.source}`);
+    return { ...item, hash: crypto.createHash('sha256').update(bytes).digest('hex') };
+  });
+  // Validate every input before replacing any previous delivery assets.
+  const lines = [];
+  for (const input of inputs) for (const name of input.names) {
+    fs.copyFileSync(input.source, path.join(root, name));
+    lines.push(`${input.hash}  ${name}\n`);
+  }
+  fs.writeFileSync(path.join(root, sums), lines.join(''));
+  return { version, assets: assetNames(version) };
 }
 
 // All remote operations are isolated here so release safety can be tested without GitHub.

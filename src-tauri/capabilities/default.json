@@ -17,6 +17,10 @@
     "core:window:allow-start-resize-dragging",
     "core:window:allow-unmaximize",
     "core:window:allow-maximize",
-    "dialog:default"
+    "dialog:default",
+    { "identifier": "opener:allow-open-url", "allow": [
+      { "url": "https://paypal.me/druidcub" },
+      { "url": "https://github.com/druidcub/gphoto/releases" }
+    ] }
   ]
 }
