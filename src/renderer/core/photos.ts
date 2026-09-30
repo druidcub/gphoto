@@ -8,7 +8,7 @@ function loadImage(filePath: string): Promise<Photo | null> {
     image.onload = () => {
       const name = filePath.split(/[\\/]/).pop() ?? filePath;
       resolve({
-        id: filePath.toLocaleLowerCase(),
+        id: filePath,
         path: filePath,
         url,
         name,

@@ -1,7 +1,7 @@
 :root {
   color: #f4f0e8;
   background: #080b10;
-  font-family: 'Segoe UI Variable', 'Segoe UI', sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI Variable', 'Segoe UI', sans-serif;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
 }
@@ -140,9 +140,15 @@ button { font: inherit; }
 .photo-foreground { position: relative; z-index: 2; width: var(--photo-width, auto); height: var(--photo-height, auto); max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 0; transform-origin: center center; }
 .photo-frame-panZoom .photo-foreground { will-change: transform; animation: safe-pan-zoom var(--slide-duration, 15s) ease-in-out infinite; }
 .soft-mode .photo-foreground {
+  -webkit-mask-image: linear-gradient(to right, transparent, black 4%, black 96%, transparent), linear-gradient(to bottom, transparent, black 4%, black 96%, transparent);
+  -webkit-mask-composite: source-in;
   mask-image: linear-gradient(to right, transparent, black 4%, black 96%, transparent), linear-gradient(to bottom, transparent, black 4%, black 96%, transparent);
   mask-composite: intersect;
 }
+.pair-background-blend { -webkit-mask-image: linear-gradient(to right, transparent 25%, rgba(0,0,0,.156) 37.5%, rgba(0,0,0,.5) 50%, rgba(0,0,0,.844) 62.5%, black 75%); }
+.setup-card, .player-hud div { -webkit-backdrop-filter: blur(18px); }
+.mini-player, .mini-setup { -webkit-user-select: none; }
+.resize-handle { touch-action: none; }
 .mini-settings { display: grid; gap: 10px; padding: 12px 0; color: #9aa2a9; }
 .player-page.mini-player { cursor: move !important; user-select: none; }
 .mini-toolbar { position: absolute; z-index: 10; top: 0; left: 0; right: 0; height: 20%; display: flex; align-items: flex-start; justify-content: flex-end; padding: 6px; gap: 6px; pointer-events: none; visibility: hidden; opacity: 0; }
@@ -197,11 +203,18 @@ button { font: inherit; }
 }
 .app-info { width: 100%; margin-top: 20px; }
 .app-info-actions { display: flex; flex-wrap: wrap; gap: 12px; }
-.app-info button { color: #d8bb8a; background: #171c22; border: 1px solid #806849; border-radius: 8px; padding: 8px 16px; cursor: pointer; }
-.app-info button:focus-visible { outline: 2px solid #e8ca96; outline-offset: 3px; }
-.app-info [role="alert"] { color: #ffb1a8; }
+.app-info button, .version-dialog button { color: #d8bb8a; background: #171c22; border: 1px solid #806849; border-radius: 8px; padding: 8px 16px; cursor: pointer; }
+.app-info button:focus-visible, .version-dialog button:focus-visible { outline: 2px solid #e8ca96; outline-offset: 3px; }
+.app-info [role="alert"], .version-dialog [role="alert"] { color: #ffb1a8; }
 .version-dialog { width: min(620px, calc(100vw - 48px)); max-height: 80vh; box-sizing: border-box; overflow: auto; padding: 24px; color: #eee6db; background: #11161c; border: 1px solid #806849; border-radius: 16px; scrollbar-color: #806849 #11161c; }
 .version-dialog::backdrop { background: rgb(0 0 0 / 65%); }
+.version-dialog:not([open]) { display: none; }
+.version-dialog.fixed { position: fixed; top: 50%; left: 0; right: 0; margin: auto; transform: translateY(-50%); }
+.version-dialog + .backdrop, ._dialog_overlay { position: fixed; inset: 0; }
+.version-dialog + .backdrop { background: rgba(0, 0, 0, .65); }
+.version-dialog::-webkit-scrollbar { width: 10px; }
+.version-dialog::-webkit-scrollbar-track { background: #11161c; }
+.version-dialog::-webkit-scrollbar-thumb { background: #806849; border: 2px solid #11161c; border-radius: 8px; }
 .version-heading { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
 .version-dialog h2 { margin: 0; }
 .version-dialog section { border-top: 1px solid #39352e; margin-top: 20px; }

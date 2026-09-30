@@ -12,6 +12,10 @@ src-tauri/gen/
 *.pdb
 coverage/
 /SHA256SUMS.txt
+release-staging/
+release-delivery/
+*.dmg
+*.app/
 
 # Personal data and credentials
 .env
@@ -22,6 +26,9 @@ settings.json.tmp
 photo-cache/
 *.pem
 *.key
+*.p12
+*.p8
+*.mobileprovision
 
 # Local editor and OS files
 .idea/

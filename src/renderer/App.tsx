@@ -13,6 +13,7 @@ import { normalizeDuration, playbackKey } from './core/playback';
 import { preloadImages } from './core/preload';
 import { MiniWindowSetup } from './pages/MiniWindowSetup';
 import { enterMiniWindow, restoreWindow, readMiniBounds, dragMiniWindow, pinMiniWindow } from './core/miniWindow';
+import { appPlatform, isFullscreenShortcut, type DesktopPlatform } from './core/platform';
 
 const DEFAULT_SETTINGS: AppSettings = {
   sourceMode: 'googlePhotos',
@@ -56,6 +57,12 @@ export default function App() {
   const [editingMiniWindow, setEditingMiniWindow] = useState(false);
   const [pinned, setPinned] = useState(false);
   const windowBusy = useRef(false);
+  const [platform, setPlatform] = useState<DesktopPlatform>('web');
+  useEffect(() => {
+    let active = true;
+    void appPlatform().then(value => { if (active) setPlatform(value); }).catch(reason => { if (active) setError(`無法取得平台資訊：${String(reason)}`); });
+    return () => { active = false; };
+  }, []);
 
   useEffect(() => { photosRef.current = photos; }, [photos]);
   const previewSlides = useMemo(() => buildSlides(photos), [photos]);
@@ -231,11 +238,11 @@ export default function App() {
       else if (key === 'ArrowRight') { event.preventDefault(); moveBy(1); }
       else if (key === 'ArrowLeft') { event.preventDefault(); moveBy(-1); }
       else if (key === 'Escape') { event.preventDefault(); void leavePlayer(); }
-      else if (key === 'F11') { event.preventDefault(); if (!event.repeat && !settings.miniWindowMode) void toggleFullscreen().catch((reason) => setError(String(reason))); }
+      else if (isFullscreenShortcut(event, platform)) { event.preventDefault(); if (!event.repeat && !settings.miniWindowMode) void toggleFullscreen().catch((reason) => setError(String(reason))); }
     };
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
-  }, [isPlaying, leavePlayer, moveBy, settings.miniWindowMode]);
+  }, [isPlaying, leavePlayer, moveBy, settings.miniWindowMode, platform]);
 
   useEffect(() => () => { window.clearTimeout(transitionTimer.current); ++transitionGeneration.current; }, []);
 

@@ -119,11 +119,8 @@ fn read_manifest(path: &Path) -> AlbumManifest {
 fn write_manifest(path: &Path, manifest: &AlbumManifest) -> Result<(), String> {
     let parent = path.parent().ok_or("快取 manifest 路徑無效")?;
     fs::create_dir_all(parent).map_err(|error| format!("無法建立快取目錄：{error}"))?;
-    let temporary = path.with_extension("json.tmp");
     let data = serde_json::to_vec_pretty(manifest).map_err(|error| error.to_string())?;
-    fs::write(&temporary, data).map_err(|error| format!("無法寫入快取索引：{error}"))?;
-    if path.exists() { fs::remove_file(path).map_err(|error| error.to_string())?; }
-    fs::rename(temporary, path).map_err(|error| format!("無法完成快取索引：{error}"))
+    crate::atomic_file::write(path, &data).map_err(|error| format!("無法完成快取索引：{error}"))
 }
 
 fn page_client() -> Result<Client, String> {

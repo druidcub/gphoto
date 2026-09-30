@@ -1,6 +1,7 @@
 import { Channel, invoke } from '@tauri-apps/api/core';
 import { getCurrentWindow } from '@tauri-apps/api/window';
 import { open } from '@tauri-apps/plugin-dialog';
+import { applyFullscreen, commitWindowMode, windowOperation } from './windowSession';
 import type { AppSettings, FolderSelection, SyncEvent, SyncSummary } from '../../shared/types';
 
 export async function choosePhotoFolder(defaultPath?: string): Promise<FolderSelection | null> {
@@ -21,14 +22,18 @@ export function scanPhotoFolder(folderPath: string): Promise<string[]> {
 }
 
 export async function setFullscreen(fullscreen: boolean): Promise<void> {
-  if (!fullscreen) await invoke('set_display_awake', { enabled: false });
-  await getCurrentWindow().setFullscreen(fullscreen);
-  if (fullscreen) await invoke('set_display_awake', { enabled: true });
+  return windowOperation(async () => {
+    await applyFullscreen(fullscreen);
+    commitWindowMode(fullscreen ? 'fullscreenPlayback' : 'settings');
+  });
 }
 
 export async function toggleFullscreen(): Promise<void> {
-  const window = getCurrentWindow();
-  await setFullscreen(!(await window.isFullscreen()));
+  return windowOperation(async () => {
+    const fullscreen = !(await getCurrentWindow().isFullscreen());
+    await applyFullscreen(fullscreen);
+    commitWindowMode(fullscreen ? 'fullscreenPlayback' : 'settings');
+  });
 }
 
 export function loadSettings(): Promise<AppSettings> {

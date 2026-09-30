@@ -1,7 +1,7 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
   "productName": "GPhoto Frame",
-  "version": "0.3.3",
+  "version": "0.4.0",
   "identifier": "io.gphotoframe.desktop",
   "build": {
     "beforeDevCommand": "npm run dev:web",
@@ -33,18 +33,9 @@
   },
   "bundle": {
     "active": true,
-    "targets": ["nsis"],
+    "icon": ["icons/32x32.png", "icons/128x128.png", "icons/128x128@2x.png", "icons/icon.icns", "icons/icon.ico"],
     "category": "Photography",
-    "shortDescription": "Windows ambient photo frame",
-    "longDescription": "A lightweight fullscreen photo frame with landscape, portrait pair, and pan-and-zoom layouts.",
-    "windows": {
-      "nsis": {
-        "installMode": "currentUser",
-        "displayLanguageSelector": true
-      },
-      "webviewInstallMode": {
-        "type": "downloadBootstrapper"
-      }
-    }
+    "shortDescription": "Ambient photo frame for Windows and macOS",
+    "longDescription": "A lightweight fullscreen photo frame with landscape, portrait pair, and pan-and-zoom layouts."
   }
 }

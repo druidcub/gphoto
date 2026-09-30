@@ -4,6 +4,31 @@
 
 [下載免安裝 EXE（Windows x64）](https://github.com/druidcub/gphoto/releases/latest/download/GPhoto-Frame-windows-x64-portable.exe) · [支持開發（PayPal）](https://paypal.me/druidcub)
 
+## macOS 測試版（0.4.0）
+
+[Mac 測試下載與版本說明](https://github.com/druidcub/gphoto/releases)：選擇 `GPhoto-Frame_0.4.0_macos-universal.dmg` 或 `GPhoto-Frame-macos-universal.dmg`，核對同一 Release 的校驗碼。推送標籤、CI 成功並人工公開預發行後才可下載。
+
+目標支援 macOS 12 起、Intel／Apple Silicon。DMG 內含完整通用 App，拖入「應用程式」後執行，不需 WebView2。此階段使用 ad-hoc 簽章，尚未完成 Developer ID 簽章、公證及 Mac 實機驗收，可能遭 Gatekeeper 阻擋；不要求關閉安全保護。預發行不取代 Windows 正式版 Latest。
+
+Mac 保留相同照片來源、預覽、柔和模式及小視窗；Space／左右鍵／Esc 不變，全螢幕快捷鍵為 `Control + Command + F`，`Command + Q` 結束程式。小視窗置頂不保證跨 Spaces 或覆蓋其他程式全螢幕。
+
+全螢幕透過 IOKit 防止閒置螢幕休眠；返回設定、最小化及退出時解除，小視窗不啟用。不阻止手動睡眠或闔蓋。Mac 設定與快取位於 Tauri 使用者資料目錄 `~/Library/Application Support/io.gphotoframe.desktop`，不放在 App／DMG 旁，不從 Windows 自動搬移。
+
+Mac 開發需 Node.js 22、Rust stable、Xcode Command Line Tools；可執行相同的 npm／Rust 測試。在 Mac 上建置：
+
+```sh
+npm ci
+npm test
+npm run typecheck
+cargo test --locked --manifest-path src-tauri/Cargo.toml
+MACOS_SIGNING_MODE=test npm run build:macos
+node scripts/release.cjs prepare v0.4.0 macos src-tauri/target/universal-apple-darwin/release release-staging/macos
+```
+
+正式模式使用 `MACOS_SIGNING_MODE=formal`，必須提供 `APPLE_SIGNING_IDENTITY`（Developer ID Application）、`APPLE_CERTIFICATE`（base64 p12）、`APPLE_CERTIFICATE_PASSWORD`、`APPLE_API_ISSUER`、`APPLE_API_KEY`、`APPLE_API_KEY_PATH`（p8 檔案）。憑證、公證或驗證失敗即停止，不降級。憑證不得提交 Git；現有 CI 明確使用 test，正式啟用時需由維護者配置 Secrets、p8 路徑及模式。
+
+驗收界線與 Mac 實機清單見 [0.4.0 驗證記錄](VERIFICATION-0.4.0.md)。
+
 ### 免安裝版與支持開發
 
 免安裝下載自 **0.3.3 正式發布**後可用。選擇安裝版（setup）或免安裝版（portable）其中一種即可；每種的版本檔名與固定檔名副本內容相同。免安裝 EXE 可直接執行，不建立捷徑或解除安裝項目，但仍需 [Microsoft WebView2 Runtime](https://developer.microsoft.com/microsoft-edge/webview2/)。缺少時請先安裝 Runtime，或改用安裝版。
@@ -16,7 +41,7 @@
 
 下載 `.exe`，不是 Source code ZIP。首次正式 Release 公開前，下載連結尚不可用；草稿不會更新最新下載。安裝檔目前未簽章，Windows 可能顯示安全提醒；請核對來源與校驗碼，不要關閉安全防護。
 
-以 Tauri 2、Rust、React 與 TypeScript 開發的 Windows 相片播放器。從 Google Photos 公開分享相簿或本機資料夾播放照片，支援全螢幕展示與可拖曳的小視窗。
+以 Tauri 2、Rust、React 與 TypeScript 開發的 Windows／macOS 相片播放器。從 Google Photos 公開分享相簿或本機資料夾播放照片，支援全螢幕展示與可拖曳的小視窗。
 
 ## 功能特色
 
@@ -146,9 +171,9 @@ cargo test --manifest-path src-tauri/Cargo.toml live_shared_album_smoke_test -- 
 ## 建置與發行
 
 ```powershell
-npm run release:check -- v0.3.3
+npm run release:check -- v0.4.0
 npm run build -- --bundles nsis -- --locked
-npm run release:prepare -- v0.3.3
+npm run release:prepare -- v0.4.0
 ```
 
 安裝檔輸出於 `src-tauri/target/release/bundle/nsis/`；`release:prepare` 將當前版本安裝檔、固定名稱 `GPhoto-Frame-windows-x64-setup.exe` 及 `SHA256SUMS.txt` 放到專案根目錄。兩份安裝檔內容相同，均不納入 Git，舊檔不刪除。整理腳本只整理既有輸出，必須先成功建置，不要將舊輸出當成新建置結果。
@@ -161,17 +186,17 @@ npm run release:prepare -- v0.3.3
 
 ```powershell
 git push -u origin main
-git tag -a v0.3.3 -m "GPhoto Frame 0.3.3"
-git push origin v0.3.3
+git tag -a v0.4.0 -m "GPhoto Frame 0.4.0"
+git push origin v0.4.0
 ```
 
-推送版本標籤會啟動 Windows 自動測試與封裝，成功後建立或更新同版本的 **Release 草稿**，不自動公開。一般測試不存取真實相簿；版本不一致或測試失敗時停止。已公開的 Release 不可由此流程覆寫。
+推送版本標籤會啟動 Windows、Mac ARM 建置及 Mac Intel 測試；全部成功後由單一工作合併資產與校驗碼，再建立或更新 **prerelease 草稿**，不自動公開。一般測試不存取真實相簿；版本不一致或測試失敗時停止。已公開的 Release 不可由此流程覆寫。
 
-到 GitHub Actions 確認成功，再到 Releases 開啟草稿、下載測試、比對校驗碼，確認後手動發布正式版本並設為 Latest。此時 README 固定連結會提供新版本。發布前不要在 workflow 執行中手動公開草稿。
+到 GitHub Actions 確認成功，再到 Releases 開啟草稿、下載測試、比對校驗碼，確認後手動公開預發行，保留 prerelease，不要設為 Latest。Windows 的 latest 入口仍提供上一個正式版；Mac 測試版從 Releases 頁取得。發布前不要在 workflow 執行中手動公開草稿。
 
-未來版本需同步更新 npm／Tauri／Cargo 與 lockfile 的專案版本，新增 `release-notes/vX.Y.Z.md` 中英文發行說明，再推送相符標籤。流程使用內建 `GITHUB_TOKEN` 的 `contents: write`，不用個人 token；不包含程式內自動更新或程式碼簽章。
+未來版本需同步更新 npm／Tauri／Cargo 與 lockfile 的專案版本，新增 `release-notes/vX.Y.Z.md` 中英文發行說明，再推送相符標籤。流程使用內建 `GITHUB_TOKEN` 的 `contents: write`，不用個人 token；不包含程式內自動更新；Mac 正式簽章模式已預留，Windows 仍未簽章。
 
-整理腳本現在也從同次建置的 `src-tauri/target/release/gphoto-frame.exe` 產生兩份免安裝 EXE，全部四個 EXE 都列入 `SHA256SUMS.txt`，缺少任一來源時停止。GitHub 草稿應有四個 EXE 與一份校驗碼。未來更新時也請維護內建的 `src/shared/changelog.ts` 中英文摘要。
+整理腳本現在也從同次建置的 `src-tauri/target/release/gphoto-frame.exe` 產生兩份免安裝 EXE，全部四個 EXE 都列入 `SHA256SUMS.txt`，缺少任一來源時停止。本機 Windows 整理只有四份 EXE 的校驗碼；GitHub 完整草稿須有四份 EXE、兩份 DMG 及一份包含六份檔案的校驗碼。未來更新時也請維護內建的 `src/shared/changelog.ts` 中英文摘要。
 
 Sponsor 按鈕由 `.github/FUNDING.yml` 提供 PayPal 自訂連結；推送至預設分支後，在 GitHub Settings → General → Features 確認 Sponsorships 已啟用。
 
@@ -180,7 +205,7 @@ Sponsor 按鈕由 `.github/FUNDING.yml` 提供 PayPal 自訂連結；推送至�
 ```text
 src/renderer/         React 頁面、照片版型、播放與預覽
 src/shared/           TypeScript 共用型別
-src-tauri/src/        Rust 設定、相簿同步／快取、Windows 電源控制
+src-tauri/src/        Rust 設定、相簿同步／快取、跨平台電源控制
 src-tauri/icons/      應用程式圖示
 tests/                前端單元與元件測試
 assets/               原始圖示素材

@@ -29,7 +29,7 @@ export function SettingsPage({
   return (
     <main className="settings-page">
       <section className="brand-block">
-        <span className="eyebrow">WINDOWS AMBIENT DISPLAY</span>
+        <span className="eyebrow">AMBIENT PHOTO DISPLAY</span>
         <h1>GPhoto <em>Frame</em></h1>
         <p>完整保留每張照片，再用它自己的色彩填滿空間。</p>
         <AppInfo />

@@ -11,7 +11,7 @@ it('shows bundled newest-first history, native modal and restores trigger focus'
   let view!: ReturnType<typeof create>;
   await act(async () => { view = create(<AppInfo />, { createNodeMock: node => node.type === 'dialog' ? modal : trigger }); });
   expect(JSON.stringify(view.toJSON())).toContain('0.3.3');
-  expect(changelog.map(entry => entry.version)).toEqual(['0.3.3', '0.3.2', '0.3.1', '0.3.0']);
+  expect(changelog.map(entry => entry.version)).toEqual(['0.4.0', '0.3.3', '0.3.2', '0.3.1', '0.3.0']);
   const button = (name: string) => view.root.findAllByType('button').find(b => b.children.join('') === name)!;
   act(() => button('版本資訊').props.onClick());
   expect(modal.showModal).toHaveBeenCalledOnce();

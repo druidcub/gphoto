@@ -33,7 +33,7 @@ export function MiniWindowSetup({ onFinish }: { onFinish: (save: boolean) => voi
     <div><button onClick={() => onFinish(true)}>儲存位置與大小</button><button onClick={() => onFinish(false)}>取消 · Esc</button></div>
     {error && <small role="alert">{error}</small>}
     {directions.map((direction) => <div key={direction} className={`resize-handle resize-${direction}`} onPointerDown={(event) => {
-      event.stopPropagation(); if (event.button === 0) run(resizeMiniWindow(direction));
+      event.stopPropagation(); if (event.button === 0) run(resizeMiniWindow(direction, { pointerId: event.pointerId, screenX: event.screenX, screenY: event.screenY, target: event.currentTarget }));
     }} />)}
   </main>;
 }

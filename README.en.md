@@ -4,6 +4,31 @@
 
 [Download standalone EXE (Windows x64)](https://github.com/druidcub/gphoto/releases/latest/download/GPhoto-Frame-windows-x64-portable.exe) · [Support development (PayPal)](https://paypal.me/druidcub)
 
+## macOS preview (0.4.0)
+
+[Mac preview downloads and release notes](https://github.com/druidcub/gphoto/releases): choose `GPhoto-Frame_0.4.0_macos-universal.dmg` or `GPhoto-Frame-macos-universal.dmg` and verify that release's checksums. Downloads require a pushed tag, successful CI and manual publication of the prerelease.
+
+Targets macOS 12+, Intel and Apple Silicon. The DMG contains the complete Universal App; drag it into Applications. WebView2 is not required. This phase uses ad-hoc signing, not Developer ID signing or Apple notarization, and has not been validated on Mac hardware. Gatekeeper may block it; do not disable security protection. Prereleases do not replace the stable Windows Latest release.
+
+Photo sources, previews, soft mode and mini windows are shared. Space, arrow keys and Esc are unchanged; use `Control + Command + F` for full screen and `Command + Q` to quit. Mini-window pinning is not guaranteed across Spaces or above other apps' native full screen.
+
+Full-screen playback uses IOKit to prevent idle display sleep, releasing the assertion when returning to settings, minimizing or quitting. Mini windows do not prevent sleep. Manual sleep and lid closure are not blocked. Mac settings/cache use Tauri's user-data directory, `~/Library/Application Support/io.gphotoframe.desktop`, not the App/DMG folder; Windows data is not automatically migrated.
+
+Mac development requires Node.js 22, Rust stable and Xcode Command Line Tools. Run the shared npm/Rust tests, then build on Mac:
+
+```sh
+npm ci
+npm test
+npm run typecheck
+cargo test --locked --manifest-path src-tauri/Cargo.toml
+MACOS_SIGNING_MODE=test npm run build:macos
+node scripts/release.cjs prepare v0.4.0 macos src-tauri/target/universal-apple-darwin/release release-staging/macos
+```
+
+Formal signing uses `MACOS_SIGNING_MODE=formal` and requires `APPLE_SIGNING_IDENTITY` (Developer ID Application), `APPLE_CERTIFICATE` (base64 p12), `APPLE_CERTIFICATE_PASSWORD`, `APPLE_API_ISSUER`, `APPLE_API_KEY`, and `APPLE_API_KEY_PATH` (p8 file). Missing credentials or failed notarization/validation stop the build, without fallback. Never commit credentials. CI currently explicitly uses test mode; maintainers must configure Secrets, a p8 path and formal mode before enabling signed distribution.
+
+See [0.4.0 verification notes](VERIFICATION-0.4.0.md) for validation boundaries and the pending Mac hardware checklist.
+
 ### Standalone edition and support
 
 The standalone download becomes available after **0.3.3 is publicly released**. Choose setup or portable; each format has identical versioned and stable-name copies. The standalone EXE runs directly, without creating shortcuts or an uninstall entry. It still requires [Microsoft WebView2 Runtime](https://developer.microsoft.com/microsoft-edge/webview2/); install the runtime first if missing, or use the setup edition.
@@ -16,7 +41,7 @@ Support development (支持開發) and Version information (版本資訊) appear
 
 Download the `.exe`, not Source code ZIP. Download links become available after the first public release; drafts do not update the latest download. Installers are currently unsigned and Windows may show a security warning. Verify the source and checksums; do not disable security protection.
 
-A Windows photo player built with Tauri 2, Rust, React and TypeScript. Play photos from a public Google Photos shared album or a local folder, in full screen or a draggable mini window. The application UI currently uses Traditional Chinese; key labels are included below.
+A Windows/macOS photo player built with Tauri 2, Rust, React and TypeScript. Play photos from a public Google Photos shared album or a local folder, in full screen or a draggable mini window. The application UI currently uses Traditional Chinese; key labels are included below.
 
 ## Features
 
@@ -146,9 +171,9 @@ cargo test --manifest-path src-tauri/Cargo.toml live_shared_album_smoke_test -- 
 ## Building and distribution
 
 ```powershell
-npm run release:check -- v0.3.3
+npm run release:check -- v0.4.0
 npm run build -- --bundles nsis -- --locked
-npm run release:prepare -- v0.3.3
+npm run release:prepare -- v0.4.0
 ```
 
 The installer is generated in `src-tauri/target/release/bundle/nsis/`. `release:prepare` copies the exact-version installer, an identical `GPhoto-Frame-windows-x64-setup.exe`, and `SHA256SUMS.txt` to the project root. These files are excluded from Git; older installers are preserved. Preparation only organizes existing output: run a successful build first, rather than treating stale output as a new build.
@@ -161,17 +186,17 @@ Confirm that origin is `https://github.com/druidcub/gphoto.git`, the GitHub repo
 
 ```powershell
 git push -u origin main
-git tag -a v0.3.3 -m "GPhoto Frame 0.3.3"
-git push origin v0.3.3
+git tag -a v0.4.0 -m "GPhoto Frame 0.4.0"
+git push origin v0.4.0
 ```
 
-Pushing a version tag triggers Windows tests and packaging, then creates or updates a **draft release**, without publishing it. Normal tests do not access real albums. Version mismatches and failed tests stop the workflow; published releases cannot be overwritten by this process.
+Pushing a version tag triggers Windows and Mac ARM builds plus Mac Intel tests. Only after all succeed does one aggregation job assemble assets/checksums and create or update a **prerelease draft**, without publishing. Normal tests do not access real albums. Version mismatches and failed tests stop the workflow; published releases cannot be overwritten by this process.
 
-Check Actions, open the draft under Releases, download/test its assets and verify checksums. Then manually publish it as a stable release and mark it Latest; README download links will serve the new version. Do not publish a draft while the workflow is still running.
+Check Actions, open the draft under Releases, download/test its assets and verify checksums. Manually publish as a prerelease, not Latest. Windows latest links continue serving the previous stable release; obtain the Mac preview from Releases. Do not publish a draft while the workflow is still running.
 
-For subsequent releases, update the npm/Tauri/Cargo project versions and lockfiles together, add bilingual `release-notes/vX.Y.Z.md`, and push the matching tag. The workflow uses the built-in `GITHUB_TOKEN` with `contents: write`, not a personal token. In-app automatic updates and code signing are not included.
+For subsequent releases, update the npm/Tauri/Cargo project versions and lockfiles together, add bilingual `release-notes/vX.Y.Z.md`, and push the matching tag. The workflow uses the built-in `GITHUB_TOKEN` with `contents: write`, not a personal token. In-app automatic updates are not included. Formal Mac signing is reserved; Windows builds remain unsigned.
 
-Preparation also copies `src-tauri/target/release/gphoto-frame.exe` from the same build into two standalone executables. All four EXEs are listed in `SHA256SUMS.txt`; missing inputs stop preparation. A release draft should contain four EXEs and the checksum file. Maintain bilingual summaries in `src/shared/changelog.ts` for future versions.
+Preparation also copies `src-tauri/target/release/gphoto-frame.exe` from the same build into two standalone executables. All four EXEs are listed in `SHA256SUMS.txt`; missing inputs stop preparation. Local Windows preparation hashes only its four EXEs. The complete GitHub draft requires four EXEs, two DMGs and a checksum file covering all six downloads. Maintain bilingual summaries in `src/shared/changelog.ts` for future versions.
 
 The Sponsor button uses the PayPal custom link in `.github/FUNDING.yml`. After pushing to the default branch, ensure Sponsorships is enabled under GitHub Settings → General → Features.
 
@@ -180,7 +205,7 @@ The Sponsor button uses the PayPal custom link in `.github/FUNDING.yml`. After p
 ```text
 src/renderer/         React pages, photo layouts, playback and previews
 src/shared/           Shared TypeScript types
-src-tauri/src/        Rust settings, album synchronization/cache, Windows power control
+src-tauri/src/        Rust settings, album synchronization/cache, cross-platform power control
 src-tauri/icons/      Application icons
 tests/                Frontend unit and component tests
 assets/               Source icon artwork

@@ -2,6 +2,7 @@ import { act, create, type ReactTestRenderer } from 'react-test-renderer';
 import { beforeEach, afterEach, expect, it, vi } from 'vitest';
 import type { AppSettings, SyncEvent } from '../src/shared/types';
 import App from '../src/renderer/App';
+vi.mock('../src/renderer/core/platform', () => ({ appPlatform: async () => 'web', platformLabel: () => '網頁預覽', isFullscreenShortcut: () => false }));
 import { SettingsPage } from '../src/renderer/pages/SettingsPage';
 const api = vi.hoisted(() => ({ loadSettings: vi.fn(), saveSettings: vi.fn(async () => {}), scanPhotoFolder: vi.fn(async () => []), syncGoogleAlbum: vi.fn(), choosePhotoFolder: vi.fn(async () => null) }));
 vi.mock('../src/renderer/core/desktop', () => ({ ...api, setFullscreen: vi.fn(), toggleFullscreen: vi.fn() }));

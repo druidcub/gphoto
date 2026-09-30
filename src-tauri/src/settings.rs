@@ -84,15 +84,12 @@ pub fn save(app: &AppHandle, settings: &AppSettings) -> Result<(), String> {
 fn save_path(path: &std::path::Path, settings: &AppSettings) -> Result<(), String> {
     let parent = path.parent().ok_or("設定路徑無效")?;
     fs::create_dir_all(parent).map_err(|error| format!("無法建立設定目錄：{error}"))?;
-    let temporary = path.with_extension("json.tmp");
     let mut normalized = settings.clone();
     normalized.max_upscale = 2.0;
     normalized.mini_window_bounds.normalize();
     normalized.slide_duration_seconds = normalize_duration(normalized.slide_duration_seconds);
     let bytes = serde_json::to_vec_pretty(&normalized).map_err(|error| error.to_string())?;
-    fs::write(&temporary, bytes).map_err(|error| format!("無法寫入設定：{error}"))?;
-    if path.exists() { fs::remove_file(&path).map_err(|error| format!("無法更新設定：{error}"))?; }
-    fs::rename(&temporary, &path).map_err(|error| format!("無法完成設定儲存：{error}"))
+    crate::atomic_file::write(path, &bytes).map_err(|error| format!("無法完成設定儲存：{error}"))
 }
 
 #[cfg(test)]

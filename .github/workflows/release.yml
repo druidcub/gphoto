@@ -1,4 +1,4 @@
-name: Windows release draft
+name: Windows and macOS release draft
 
 on:
   push:
@@ -12,10 +12,8 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  windows-release:
+  windows-build:
     runs-on: windows-2022
-    permissions:
-      contents: write
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -40,9 +38,82 @@ jobs:
       - name: Prepare exact-version assets and checksums
         env:
           RELEASE_TAG: ${{ github.ref_name }}
-        run: node scripts/release.cjs prepare "$env:RELEASE_TAG"
-      - name: Create or update draft only
+        run: node scripts/release.cjs prepare "$env:RELEASE_TAG" windows src-tauri/target/release release-staging/windows
+      - uses: actions/upload-artifact@v4
+        with:
+          name: windows
+          path: release-staging/windows/*
+          if-no-files-found: error
+
+  macos-build:
+    runs-on: macos-15
+    env:
+      MACOS_SIGNING_MODE: test
+      RELEASE_TAG: ${{ github.ref_name }}
+      MACOSX_DEPLOYMENT_TARGET: '12.0'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: rustup toolchain install stable --profile minimal --no-self-update
+      - run: rustup default stable
+      - run: node scripts/release.cjs check "$RELEASE_TAG"
+      - run: npm ci
+      - run: npm run test:release
+      - run: npm test
+      - run: npm run typecheck
+      - run: cargo test --locked --manifest-path src-tauri/Cargo.toml
+      - run: npm run build:macos
+      - run: node scripts/release.cjs prepare "$RELEASE_TAG" macos src-tauri/target/universal-apple-darwin/release release-staging/macos
+      - uses: actions/upload-artifact@v4
+        with:
+          name: macos
+          path: release-staging/macos/*
+          if-no-files-found: error
+
+  macos-intel-test:
+    runs-on: macos-15-intel
+    env:
+      MACOSX_DEPLOYMENT_TARGET: '12.0'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: rustup toolchain install stable --profile minimal --no-self-update
+      - run: rustup default stable
+      - run: node scripts/release.cjs check "${{ github.ref_name }}"
+      - run: npm ci
+      - run: npm run test:release
+      - run: npm test
+      - run: npm run typecheck
+      - run: cargo test --locked --manifest-path src-tauri/Cargo.toml
+
+  release-draft:
+    needs: [windows-build, macos-build, macos-intel-test]
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/download-artifact@v4
+        with:
+          name: windows
+          path: release-staging/windows
+      - uses: actions/download-artifact@v4
+        with:
+          name: macos
+          path: release-staging/macos
+      - run: node scripts/release.cjs assemble "${{ github.ref_name }}" release-staging release-delivery
+      - name: Create or update prerelease draft only
         env:
           GH_TOKEN: ${{ github.token }}
           RELEASE_TAG: ${{ github.ref_name }}
-        run: node scripts/release.cjs draft "$env:RELEASE_TAG"
+          RELEASE_DELIVERY: release-delivery
+        run: node scripts/release.cjs draft "$RELEASE_TAG"
